@@ -1,0 +1,161 @@
+{% extends 'layout_main.html' %}
+{% block drawer %}
+<aside class="s-drawer mdc-drawer">
+    <div class="mdc-drawer__header">
+        <img id="logo-nav-drawer" src="{{ url_for('static', filename='images/manifest/icon-512x512.png') }}"
+            alt="Logo SMSWhapp" />
+        <h3 class="mdc-drawer__title">SMSWhapp</h3>
+        <h6 class="mdc-drawer__subtitle">Asistencia Remota</h6>
+    </div>
+    <div class="mdc-drawer__content">
+        <nav class="mdc-list">
+            <a class="mdc-list-item" href="/home/" aria-current="page" tabindex="0">
+                <span class="mdc-list-item__ripple"></span>
+                <i class="material-icons mdc-list-item__graphic" aria-hidden="true">home</i>
+                <span class="mdc-list-item__text">Bienvenido</span>
+            </a>
+            <a class="mdc-list-item" href="/reports/" aria-current="page" tabindex="0">
+                <span class="mdc-list-item__ripple"></span>
+                <i class="material-icons mdc-list-item__graphic" aria-hidden="true">summarize</i>
+                <span class="mdc-list-item__text">Reporte</span>
+            </a>
+            <hr class="mdc-list-divider s-mdc-list-divider">
+            <a class="mdc-list-item" href="/acercade/">
+                <span class="mdc-list-item__ripple"></span>
+                <i class="material-icons mdc-list-item__graphic" aria-hidden="true">info</i>
+                <span class="mdc-list-item__text">Acerca de...</span>
+            </a>
+        </nav>
+    </div>
+</aside>
+<div class="mdc-drawer-scrim"></div>
+{% endblock %}
+{% block topbar %}
+<header class="s-topbar mdc-top-app-bar">
+    <div class="mdc-top-app-bar__row">
+        <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+            <button class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button" aria-label="Menu">
+                menu
+            </button>
+            <span class="mdc-top-app-bar__title topAppBar-title">
+                <a href="/">SMSWhapp</a>
+            </span>
+        </section>
+        <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
+            <div class="mdc-menu-surface--anchor">
+                <button id="shareButton" class="mdc-top-app-bar__action-item mdc-icon-button" aria-label="Share"
+                    alt="Share">
+                    <i class="material-icons mdc-icon-button__icon">share</i>
+                </button>
+                <div id="shareMenu" class="mdc-menu mdc-menu-surface" tabindex="-1">
+                    <ul class="mdc-list mdc-menu__items" role="menu" aria-hidden="true">
+                        <li class="mdc-list-item" role="menuitem" tabindex="0">
+                            <span class="mdc-list-item__ripple"></span>
+                            <i class="s-icon-color-email material-icons mdc-list-item__graphic" aria-hidden="true">email</i>
+                            <span class="mdc-list-item__text">Email</span>
+                        </li>
+                        <li class="mdc-list-item" role="menuitem" tabindex="0">
+                            <span class="mdc-list-item__ripple"></span>
+                            <i class="s-icon-color-facebook mdc-list-item__graphic fa fa-facebook" aria-hidden="true"></i>
+                            <span class="mdc-list-item__text">Facebook</span>
+                        </li>
+                        <li class="mdc-list-item" role="menuitem" tabindex="0">
+                            <span class="mdc-list-item__ripple"></span>
+                            <i class="s-icon-color-linkedin mdc-list-item__graphic fa fa-linkedin" aria-hidden="true"></i>
+                            <span class="mdc-list-item__text">LinkedIn</span>
+                        </li>
+                        <li class="mdc-list-item" role="menuitem" tabindex="0">
+                            <span class="mdc-list-item__ripple"></span>
+                            <i class="s-icon-color-twitter mdc-list-item__graphic fa fa-twitter" aria-hidden="true"></i>
+                            <span class="mdc-list-item__text">Twitter</span>
+                        </li>
+                        <li class="mdc-list-item" role="menuitem" tabindex="0">
+                            <span class="mdc-list-item__ripple"></span>
+                            <i class="s-icon-color-whatsapp mdc-list-item__graphic fa fa-whatsapp" aria-hidden="true"></i>
+                            <span class="mdc-list-item__text">WhatsApp</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- <div class="mdc-menu-surface--anchor">
+                <button id="accountButton" class="mdc-top-app-bar__action-item mdc-icon-button" aria-label="My Account" alt="My Account">
+                    <i id="accountIcon" class="material-icons mdc-icon-button__icon">person</i>
+                    <img id="accountImage" src="" class="mdc-icon-button__icon container--hidden"/>
+                </button>
+                <div id="accountMenu" class="mdc-menu mdc-menu-surface" tabindex="-1">
+                    <ul class="mdc-list mdc-menu__items" role="menu" aria-hidden="true">
+                        <li id="accountLogIn" class="mdc-list-item" role="menuitem" tabindex="0">
+                            <span class="mdc-list-item__ripple"></span>
+                            <i class="material-icons mdc-list-item__graphic" aria-hidden="true">cloud_queue</i>
+                            <span class="mdc-list-item__text">Iniciar Sesión</span>
+                        </li>
+                        <li id="accountLogOut" class="mdc-list-item container--hidden" role="menuitem" tabindex="1">
+                            <span class="mdc-list-item__ripple"></span>
+                            <i class="material-icons mdc-list-item__graphic" aria-hidden="true">cloud_off</i>
+                            <span class="mdc-list-item__text">Cerrar Sesión</span>
+                        </li>
+                    </ul>
+                </div>
+            </div> -->
+            <!-- <button id="loginButton" class="mdc-button mdc-button--outlined mdc-button--color-inverted" aria-label="Login" alt="Login">
+                <div class="mdc-button__ripple"></div>
+                <span class="mdc-button__label">Iniciar Sesión</span>
+            </button> -->
+        </section>
+    </div>
+</header>
+<div class="s-topbar-loading mdc-linear-progress mdc-linear-progress--indeterminate mdc-linear-progress--closed"
+     role="progressbar" aria-label="Progress Bar" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0">
+    <div class="mdc-linear-progress__buffer">
+        <div class="mdc-linear-progress__buffer-bar"></div>
+        <div class="mdc-linear-progress__buffer-dots"></div>
+    </div>
+    <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+        <span class="mdc-linear-progress__bar-inner"></span>
+    </div>
+    <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+        <span class="mdc-linear-progress__bar-inner"></span>
+    </div>
+</div>
+{% endblock %}
+{% block footer %}
+<div class="mdc-snackbar" aria-live="assertive" aria-atomic="true" aria-hidden="true">
+    <div class="mdc-snackbar__surface">
+        <div class="mdc-snackbar__label-error">ERROR:</div>
+        <div class="mdc-snackbar__label-success">ÉXITO:</div>
+        <div class="mdc-snackbar__label" role="status" aria-live="polite"></div>
+        <div class="mdc-snackbar__actions">
+            <button type="button" class="mdc-button mdc-snackbar__action"></button>
+        </div>
+    </div>
+</div>
+{% block bottombar %}{% endblock %}
+<footer class="s-footer">
+    <div class="mdc-layout-grid">
+        <div class="mdc-layout-grid__inner">
+            <div class="mdc-layout-grid__cell">
+                <section class="footer-about">
+                    <div class="footer-section__title">
+                        SMSWhapp
+                    </div>
+                    <div class="footer-about__text">
+                        WhatsApp API SMS for R&D.
+                    </div>
+                    <span class="footer-about__author">
+                        RXDBit
+                    </span>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div class="mdc-layout-grid">
+        <div class="mdc-layout-grid__inner">
+            <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
+                <section class="footer-copyright">
+                    SMSWhapp. Derechos reservados | <span id="s-version"></span> | Diseñado por RXDBit
+                </section>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}

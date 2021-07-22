@@ -1,0 +1,383 @@
+{% extends 'layout_main-drawer_footer_topbar.html' %}
+{% block page_description %}SMSWhapp Funciones, Funciones, Home{% endblock %}
+{% block page_title %}SMSWhapp Funciones{% endblock %}
+{% block body %}
+<main class="s-main-content">
+    <div class="container-color-background">
+        <div class="mdc-layout-grid container-size-xs">
+            <div class="mdc-layout-grid__inner">
+                <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6 mdc-layout-grid__cell--span-8-tablet 
+                            mdc-layout-grid__cell--align-middle container-justify-center s-font-align-center">
+                    <img class="resize-image-2fit-50"
+                        src="{{ url_for('static', filename='images/manifest/options_list.svg') }}"
+                        alt="Logo Funciones" />
+                </div>
+                <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6 mdc-layout-grid__cell--span-8-tablet 
+                            mdc-layout-grid__cell--align-middle container-justify-center">
+                    <div class="mdc-typography--headline2 s-font-color-primary">
+                        Envío de Mensajes
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-color-background">
+        <div class="mdc-layout-grid container-size-m">
+            <div class="mdc-layout-grid__inner">
+                <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-5-desktop mdc-layout-grid__cell--span-8-tablet
+                            mdc-layout-grid__cell--align-top container-justify-center">
+                    <h5 class="mdc-typography--headline5 s-font-color-primary">
+                        Selecciona entre las diferentes opciones
+                    </h5>
+                    <p class="container-smswhapp-options">
+                        <label id="selDate" class="mdc-text-field mdc-text-field--filled" data-assigned-var>
+                            <span class="mdc-text-field__ripple"></span>
+                            <input class="mdc-text-field__input" type="date" aria-labelledby="f-appointment-birthdate-label" tabindex="0">
+                            <span class="mdc-floating-label" id="f-appointment-birthdate-label">Fecha y Hora de Envío</span>
+                            <span class="mdc-line-ripple"></span>
+                        </label>
+                    </p>
+                    <div class="container-smswhapp-options">
+                        <div id="selGroup" class="mdc-select" role="button" data-action-fn="selectMessageGroup" data-assigned-var>
+                            <div class="mdc-select__anchor">
+                                <span class="mdc-select__ripple"></span>
+                                <input type="text" disabled readonly class="mdc-select__selected-text">
+                                <i class="mdc-select__dropdown-icon"></i>
+                                <span class="mdc-floating-label">Selecciona Grupo</span>
+                                <span class="mdc-line-ripple"></span>
+                            </div>
+                            <div class="mdc-select__menu mdc-menu mdc-menu-surface" role="listbox" tabindex="0">
+                                <ul class="mdc-list mdc-select__list">
+                                    <li class="mdc-list-item" data-value="cg">
+                                        <span class="mdc-list-item__text">
+                                            Control
+                                        </span>
+                                    </li>
+                                    <li class="mdc-list-item" data-value="tg">
+                                        <span class="mdc-list-item__text">
+                                            Tratamiento
+                                        </span>
+                                    </li>
+                                    <li class="mdc-list-item" data-value="sg">
+                                        <span class="mdc-list-item__text">
+                                            -- Stakeholders
+                                        </span>
+                                    </li>
+                                    <li class="mdc-list-item" data-value="dg">
+                                        <span class="mdc-list-item__text">
+                                            -- Developers
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-smswhapp-options">
+                        <div id="selMessages" class="mdc-select" role="button" data-action-fn="selectMessage" data-assigned-var>
+                            <div class="mdc-select__anchor">
+                                <span class="mdc-select__ripple"></span>
+                                <input type="text" disabled readonly class="mdc-select__selected-text">
+                                <i class="mdc-select__dropdown-icon"></i>
+                                <span class="mdc-floating-label">Selecciona Mensaje</span>
+                                <span class="mdc-line-ripple"></span>
+                            </div>
+                            <div class="mdc-select__menu mdc-menu mdc-menu-surface" role="listbox" tabindex="0">
+                                <ul class="mdc-list mdc-select__list">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-smswhapp-options">
+                        <div id="selMsgsMins" class="mdc-select" role="button" data-assigned-var>
+                            <div class="mdc-select__anchor">
+                                <span class="mdc-select__ripple"></span>
+                                <input type="text" disabled readonly class="mdc-select__selected-text">
+                                <i class="mdc-select__dropdown-icon"></i>
+                                <span class="mdc-floating-label">Mensajes por Minuto</span>
+                                <span class="mdc-line-ripple"></span>
+                            </div>
+                            <div class="mdc-select__menu mdc-menu mdc-menu-surface" role="listbox" tabindex="0">
+                                <ul class="mdc-list mdc-select__list">
+                                    <li class="mdc-list-item" data-value="m2">
+                                        <span class="mdc-list-item__text">
+                                            2 Mensaje por minuto
+                                        </span>
+                                    </li>
+                                    <li class="mdc-list-item" data-value="m3">
+                                        <span class="mdc-list-item__text">
+                                            3 Mensajes por minuto
+                                        </span>
+                                    </li>
+                                    <li class="mdc-list-item" data-value="m4">
+                                        <span class="mdc-list-item__text">
+                                            4 Mensajes por minuto
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-smswhapp-options">
+                        <div id="selTelNumber" class="mdc-select" role="button" data-assigned-var>
+                            <div class="mdc-select__anchor">
+                                <span class="mdc-select__ripple"></span>
+                                <input type="text" disabled readonly class="mdc-select__selected-text">
+                                <i class="mdc-select__dropdown-icon"></i>
+                                <span class="mdc-floating-label">Selecciona Teléfono</span>
+                                <span class="mdc-line-ripple"></span>
+                            </div>
+                            <div class="mdc-select__menu mdc-menu mdc-menu-surface" role="listbox" tabindex="0">
+                                <ul class="mdc-list mdc-select__list">
+                                    <li class="mdc-list-item" data-value="t1">
+                                        <span class="mdc-list-item__text">
+                                            +503 7684 2455 (Control)
+                                        </span>
+                                    </li>
+                                </ul>
+                                <ul class="mdc-list mdc-select__list">
+                                    <li class="mdc-list-item" data-value="t2">
+                                        <span class="mdc-list-item__text">
+                                            +503 7684 8930 (Tratamiento)
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-7-desktop mdc-layout-grid__cell--span-8-tablet
+                            mdc-layout-grid__cell--align-top s-font-align-center">
+                    <h5 class="mdc-typography--headline5 s-font-color-primary">
+                        Visualización de los Mensajes
+                    </h5>
+                    <div class="container-smswhapp-group--treatment container--hidden">
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="1">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_1.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="2">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_2.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="3">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_3.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="4">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_4.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="5">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_5.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="6">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_6.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="7">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_7.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="8">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_8.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="9">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_9.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="10">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_10.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="11">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_11.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="12">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_12.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="13">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_13.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="14">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_14.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="15">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_15.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="16">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Tratamiento_16.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                    </div>
+                    <div class="container-smswhapp-group--control container--hidden">
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="1">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Control_1.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="2">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Control_2.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="3">
+                            <p class="s-font-align-center">
+                                <img class="resize-image-2fit-50" src="../static/images/assets/Control_3.jpg" />
+                            </p>
+                            <p>
+                                Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o
+                                escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: [[telnum]]
+                            </p>
+                        </div>
+                    </div>
+                    <div class="container-smswhapp-group--stakeholder container--hidden">
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="1">
+                            <p class="s-font-align-center">
+                                Enviar mensajes de prueba. (Bienvenida + Mensajes de Control + Mensajes de Tratamiento)
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="2">
+                            <p class="s-font-align-center">
+                                Validar Cuenta de WhatsApp Stakeholders.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="container-smswhapp-group--developer container--hidden">
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="1">
+                            <p class="s-font-align-center">
+                                Enviar mensaje de prueba Developer.
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="2">
+                            <p class="s-font-align-center">
+                                Enviar mensajes de prueba Developer. (Bienvenida + Mensajes de Control + Mensajes de Tratamiento)
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="3">
+                            <p class="s-font-align-center">
+                                Validar Cuenta de WhatsApp Developer.
+                            </p>
+                        </div>
+                        <div class="container-smswhapp-sms container--hidden" data-value-sms="4">
+                            <p class="s-font-align-center">
+                                Validar Cuentas de WhatsApp de la Base de Datos.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12-desktop mdc-layout-grid__cell--span-8-tablet
+                        mdc-layout-grid__cell--span-4-phone mdc-layout-grid__cell--align-middle s-font-align-center
+                        container-appointmentadm-confirm">
+                    <h5 class="mdc-typography--headline5 s-font-color-primary">
+                        Confirmar envío de mensajes
+                    </h5>
+                    <div class="container-appointment-confirm--submit">
+                        <button id="submitSaveButton" class="mdc-button mdc-button--raised" aria-label="Submit" alt="Submit"
+                                data-action-type="submit" data-action-fn="sendMessages">
+                            <div class="mdc-button__ripple"></div>
+                            <span class="mdc-button__label">Enviar mensajes</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+{% block body_script_section %}
+{% endblock %}
