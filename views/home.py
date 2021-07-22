@@ -1,11 +1,13 @@
-import requests, threading, time
+import json, requests, threading, time
 
+from . import db
 from datetime import datetime as dt
 from datetime import timedelta as td
 from datetime import timezone as tz
 from flask import Blueprint, redirect, render_template, request, url_for, jsonify, make_response
 from flask import current_app as app
-from models.models import CatalogDevices, CatalogMessages, CatalogOperationsCenter, CatalogUserTestType, SentMessages, SentMessagesProgress, User
+from models.models import CatalogDevices, CatalogMessages, CatalogOperationsCenter, CatalogUserTestType
+from models.models import SentMessages, SentMessagesProgress, User, WebhooksResponse
 
 home = Blueprint('home', __name__, template_folder='templates', static_folder='static')
 
@@ -15,6 +17,7 @@ class WassengerTask(threading.Thread):
     # Properties init
     def __init__(self, records, url, sleeptime, msgtype):
         threading.Thread.__init__(self)
+        self.app = app._get_current_object()
         self.headers = {
             "Content-Type": "application/json",
             "Token": app.config['WASS_API_KEY']
@@ -26,15 +29,46 @@ class WassengerTask(threading.Thread):
     
     # Thread activity task
     def run(self, *args, **kwargs):
-        while True:
-            for item in self.records.items:
-                print(item.name)
+        with self.app.app_context():
+            payload = {}
             
-            if self.records.has_next:
-                self.records = self.records.next()
-            else:
-                print("********* - WassengerTask Thread Finished - *********")
-                break
+            while True:
+                # Validate WhatsApp Number
+                if self.msgtype == 'val_wha':
+                    for item in self.records.items:
+                        payload['phone'] = item.phonenumber
+                        
+                        response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                        json_response = json.loads(response.text)
+                        time.sleep(self.sleeptime)
+
+                        # Try to validate the number 2 more times
+                        if json_response['exists'] is not True:
+                            response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                            json_response = json.loads(response.text)
+                            time.sleep(self.sleeptime)
+
+                            if json_response['exists'] is not True:
+                                response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                                json_response = json.loads(response.text)
+                                time.sleep(self.sleeptime)
+                        
+                        # Update User Information
+                        usr_upd = User.query.filter(
+                            User.id == item.id
+                        ).first()
+                        usr_upd.has_whatsapp = json_response['exists']
+
+                        db.session.add(usr_upd)
+
+                # Commit current data page updates
+                db.session.commit()
+
+                if self.records.has_next:
+                    self.records = self.records.next()
+                else:
+                    print("********* - WassengerTask Thread Finished - *********")
+                    break
 
 
 @home.route('/')
@@ -110,6 +144,7 @@ def _sendwasms():
             
             # General variables
             group = None
+            msgtype = None
             msgsxhour = 60 * 4
             msgssleeptime = 60 / 4
             users = None
@@ -129,6 +164,8 @@ def _sendwasms():
 
             # Control Group
             if msg_group == 'cg':
+                msgtype = 'sms_ctr'
+
                 group = CatalogUserTestType.query.filter_by(
                     name_short = 'ut_ctr'
                 ).first()
@@ -145,6 +182,8 @@ def _sendwasms():
 
             # Developer Group
             elif msg_group == 'dg':
+                msgtype = 'sms_dev'
+
                 group = CatalogUserTestType.query.filter_by(
                     name_short = 'ut_dev'
                 ).first()
@@ -152,6 +191,7 @@ def _sendwasms():
                 # If option is to validate WhatsApp numbers, we can check them at a rate of
                 # 1 number every 2 seconds or 30 numbers every 60 seconds
                 if msg_msgnumber == '3' or msg_msgnumber == '4':
+                    msgtype = 'val_wha'
                     msgsxhour = 30 * 60
                     msgssleeptime = 60 / 30
                     url = "https://api.wassenger.com/v1/numbers/exists"
@@ -177,6 +217,8 @@ def _sendwasms():
                 
             # Stakeholders Group
             elif msg_group == 'sg':
+                msgtype = 'sms_stk'
+
                 group = CatalogUserTestType.query.filter_by(
                     name_short = 'ut_stk'
                 ).first()
@@ -187,6 +229,7 @@ def _sendwasms():
                 # If option is to validate WhatsApp numbers, we can check them at a rate of
                 # 1 number every 2 seconds or 30 numbers every 60 seconds
                 if msg_msgnumber == '2':
+                    msgtype = 'val_wha'
                     msgsxhour = 30 * 60
                     msgssleeptime = 60 / 30
                     url = "https://api.wassenger.com/v1/numbers/exists"
@@ -204,6 +247,8 @@ def _sendwasms():
             
             # Treatment Group
             elif msg_group == 'tg':
+                msgtype = 'sms_trt'
+
                 group = CatalogUserTestType.query.filter_by(
                     name_short = 'ut_trt'
                 ).first()
@@ -218,16 +263,11 @@ def _sendwasms():
                     error_out = True
                 )
 
-            # payload = {"phone": "+12023231111"}
-
-            # response = requests.request("POST", url, json=payload, headers=headers)
-
-            # print(response.text)
-            
-            task = WassengerTask(users, url, msgssleeptime, '')
+            # Initiate a Background Task to execute Wassenger Operation
+            task = WassengerTask(users, url, msgssleeptime, msgtype)
             task.start()
 
-            print('*********** Function FINISHED! *************')
+            print('*********** Function SendWASMS Finalized! *************')
             return jsonify({
                 'status': 200,
                 'pages': (users.pages if users is not None else 0),

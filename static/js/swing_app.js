@@ -218,7 +218,7 @@ export function selectMessageGroup(group) {
         document.querySelector('.container-smswhapp-group--developer').classList.add('container--hidden');
         document.querySelector('.container-smswhapp-group--treatment').classList.add('container--hidden');
         document.querySelector('.container-smswhapp-group--stakeholder').classList.remove('container--hidden');
-        createMessageSelectList(msgList, 1);
+        createMessageSelectList(msgList, 2);
     } else if (group == 'dg') {
         document.querySelector('.container-smswhapp-group--control').classList.add('container--hidden');
         document.querySelector('.container-smswhapp-group--stakeholder').classList.add('container--hidden');
