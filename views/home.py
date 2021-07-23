@@ -70,6 +70,7 @@ class WassengerTask(threading.Thread):
                             })
 
                             db.session.add(usr_upd)
+                            db.session.flush()
 
                     # Commit current data page updates
                     db.session.commit()
