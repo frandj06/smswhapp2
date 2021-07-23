@@ -270,6 +270,7 @@ def _returnResponseJSON(res):
     response = {}
     if res is not None:
         if hasattr(res, 'text') and res.text is not None:
+            print(res.text)
             response = json.loads(res.text)
     return response
 
