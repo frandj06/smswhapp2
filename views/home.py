@@ -41,30 +41,31 @@ class WassengerTask(threading.Thread):
                             
                             retries = 1
                             response = requests.request("POST", self.url, json=payload, headers=self.headers)
-                            json_response = json.loads(response.text)
+                            json_response = json.loads(response.text) if response is not None else {}
                             time.sleep(self.sleeptime)
 
                             # Try to validate the number 2 more times
-                            if json_response['exists'] is not True:
+                            if 'exists' in json_response and json_response['exists'] is not True:
                                 retries = 2
                                 response = requests.request("POST", self.url, json=payload, headers=self.headers)
-                                json_response = json.loads(response.text)
+                                json_response = json.loads(response.text) if response is not None else {}
                                 time.sleep(self.sleeptime)
 
-                                if json_response['exists'] is not True:
+                                if 'exists' in json_response and json_response['exists'] is not True:
                                     retries = 3
                                     response = requests.request("POST", self.url, json=payload, headers=self.headers)
-                                    json_response = json.loads(response.text)
+                                    json_response = json.loads(response.text) if response is not None else {}
                                     time.sleep(self.sleeptime)
                             
                             # Update User Information
                             usr_upd = User.query.filter(
                                 User.id == item.id
                             ).first()
-                            usr_upd.has_whatsapp = json_response['exists']
+                            usr_upd.has_whatsapp = json_response['exists'] if 'exists' in json_response else False
                             usr_upd.comments = json.dumps({ 
                                 'val_wha': { 
                                     'attempts': retries,
+                                    'status': response.status_code,
                                     'timestamp': str(dt.now(tz.utc))
                                 }
                             })
