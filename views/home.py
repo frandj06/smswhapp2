@@ -69,11 +69,9 @@ class WassengerTask(threading.Thread):
                                 }
                             })
 
+                            # Commit current data page updates
                             db.session.add(usr_upd)
-                            db.session.flush()
-
-                    # Commit current data page updates
-                    db.session.commit()
+                            db.session.commit()
 
                     if self.records.has_next:
                         self.records = self.records.next()
