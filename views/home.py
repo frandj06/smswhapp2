@@ -30,45 +30,59 @@ class WassengerTask(threading.Thread):
     # Thread activity task
     def run(self, *args, **kwargs):
         with self.app.app_context():
-            payload = {}
-            
-            while True:
-                # Validate WhatsApp Number
-                if self.msgtype == 'val_wha':
-                    for item in self.records.items:
-                        payload['phone'] = item.phonenumber
-                        
-                        response = requests.request("POST", self.url, json=payload, headers=self.headers)
-                        json_response = json.loads(response.text)
-                        time.sleep(self.sleeptime)
-
-                        # Try to validate the number 2 more times
-                        if json_response['exists'] is not True:
+            try:
+                payload = {}
+                
+                while True:
+                    # Validate WhatsApp Number
+                    if self.msgtype == 'val_wha':
+                        for item in self.records.items:
+                            payload['phone'] = item.phonenumber
+                            
+                            retries = 1
                             response = requests.request("POST", self.url, json=payload, headers=self.headers)
                             json_response = json.loads(response.text)
                             time.sleep(self.sleeptime)
 
+                            # Try to validate the number 2 more times
                             if json_response['exists'] is not True:
+                                retries = 2
                                 response = requests.request("POST", self.url, json=payload, headers=self.headers)
                                 json_response = json.loads(response.text)
                                 time.sleep(self.sleeptime)
-                        
-                        # Update User Information
-                        usr_upd = User.query.filter(
-                            User.id == item.id
-                        ).first()
-                        usr_upd.has_whatsapp = json_response['exists']
 
-                        db.session.add(usr_upd)
+                                if json_response['exists'] is not True:
+                                    retries = 3
+                                    response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                                    json_response = json.loads(response.text)
+                                    time.sleep(self.sleeptime)
+                            
+                            # Update User Information
+                            usr_upd = User.query.filter(
+                                User.id == item.id
+                            ).first()
+                            usr_upd.has_whatsapp = json_response['exists']
+                            usr_upd.comments = json.dumps({ 
+                                'val_wha': { 
+                                    'attempts': retries,
+                                    'timestamp': str(dt.now(tz.utc))
+                                }
+                            })
 
-                # Commit current data page updates
-                db.session.commit()
+                            db.session.add(usr_upd)
 
-                if self.records.has_next:
-                    self.records = self.records.next()
-                else:
-                    print("********* - WassengerTask Thread Finished - *********")
-                    break
+                    # Commit current data page updates
+                    db.session.commit()
+
+                    if self.records.has_next:
+                        self.records = self.records.next()
+                    else:
+                        print("********* - WassengerTask Thread Finished - *********")
+                        break
+
+            except Exception as e:
+                self.app.logger.error('** SWING_CMS ** - WassengerTask Error: {}'.format(e))
+                return jsonify({ 'status': 'error' })
 
 
 @home.route('/')
