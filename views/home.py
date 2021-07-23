@@ -11,80 +11,6 @@ from models.models import SentMessages, SentMessagesProgress, User, WebhooksResp
 
 home = Blueprint('home', __name__, template_folder='templates', static_folder='static')
 
-# Wassenger Background Task
-# Configuration - API Key and Headers
-class WassengerTask(threading.Thread):
-    # Properties init
-    def __init__(self, records, url, sleeptime, msgtype):
-        threading.Thread.__init__(self)
-        self.app = app._get_current_object()
-        self.headers = {
-            "Content-Type": "application/json",
-            "Token": app.config['WASS_API_KEY']
-        }
-        self.msgtype = msgtype
-        self.records = records
-        self.sleeptime = sleeptime
-        self.url = url
-    
-    # Thread activity task
-    def run(self, *args, **kwargs):
-        with self.app.app_context():
-            try:
-                payload = {}
-                
-                while True:
-                    # Validate WhatsApp Number
-                    if self.msgtype == 'val_wha':
-                        for item in self.records.items:
-                            payload['phone'] = item.phonenumber
-                            
-                            retries = 1
-                            response = requests.request("POST", self.url, json=payload, headers=self.headers)
-                            json_response = json.loads(response.text) if response is not None else {}
-                            time.sleep(self.sleeptime)
-
-                            # Try to validate the number 2 more times
-                            if 'exists' in json_response and json_response['exists'] is not True:
-                                retries = 2
-                                response = requests.request("POST", self.url, json=payload, headers=self.headers)
-                                json_response = json.loads(response.text) if response is not None else {}
-                                time.sleep(self.sleeptime)
-
-                                if 'exists' in json_response and json_response['exists'] is not True:
-                                    retries = 3
-                                    response = requests.request("POST", self.url, json=payload, headers=self.headers)
-                                    json_response = json.loads(response.text) if response is not None else {}
-                                    time.sleep(self.sleeptime)
-                            
-                            # Update User Information
-                            usr_upd = User.query.filter(
-                                User.id == item.id
-                            ).first()
-                            usr_upd.has_whatsapp = json_response['exists'] if 'exists' in json_response else False
-                            usr_upd.comments = json.dumps({ 
-                                'val_wha': { 
-                                    'attempts': retries,
-                                    'status': response.status_code,
-                                    'timestamp': str(dt.now(tz.utc))
-                                }
-                            })
-
-                            # Commit current data page updates
-                            db.session.add(usr_upd)
-                            db.session.commit()
-
-                    if self.records.has_next:
-                        self.records = self.records.next()
-                    else:
-                        print("********* - WassengerTask Thread Finished - *********")
-                        break
-
-            except Exception as e:
-                self.app.logger.error('** SWING_CMS ** - WassengerTask Error: {}'.format(e))
-                return jsonify({ 'status': 'error' })
-
-
 @home.route('/')
 def _index():
     app.logger.debug('** SWING_CMS ** - Index')
@@ -334,3 +260,88 @@ def _wsms():
     app.logger.debug('** SWING_CMS ** - WhatsApp SMS')
     return render_template('wassenger.html')
 
+
+# **************************************************************************
+# Utilities
+# **************************************************************************
+
+# Wassenger Utilities
+def _returnResponseJSON(res):
+    response = {}
+    if res is not None:
+        if hasattr(res, 'text') and res.text is not None:
+            response = json.loads(res.text)
+    return response
+
+# Wassenger Background Task
+# Configuration - API Key and Headers
+class WassengerTask(threading.Thread):
+    # Properties init
+    def __init__(self, records, url, sleeptime, msgtype):
+        threading.Thread.__init__(self)
+        self.app = app._get_current_object()
+        self.headers = {
+            "Content-Type": "application/json",
+            "Token": app.config['WASS_API_KEY']
+        }
+        self.msgtype = msgtype
+        self.records = records
+        self.sleeptime = sleeptime
+        self.url = url
+    
+    # Thread activity task
+    def run(self, *args, **kwargs):
+        with self.app.app_context():
+            try:
+                payload = {}
+                
+                while True:
+                    # Validate WhatsApp Number
+                    if self.msgtype == 'val_wha':
+                        for item in self.records.items:
+                            payload['phone'] = item.phonenumber
+                            
+                            retries = 1
+                            response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                            json_response = _returnResponseJSON(response)
+                            time.sleep(self.sleeptime)
+
+                            # Try to validate the number 2 more times
+                            if 'exists' in json_response and json_response['exists'] is not True:
+                                retries = 2
+                                response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                                json_response = _returnResponseJSON(response)
+                                time.sleep(self.sleeptime)
+
+                                if 'exists' in json_response and json_response['exists'] is not True:
+                                    retries = 3
+                                    response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                                    json_response = _returnResponseJSON(response)
+                                    time.sleep(self.sleeptime)
+                            
+                            # Update User Information
+                            usr_upd = User.query.filter(
+                                User.id == item.id
+                            ).first()
+                            usr_upd.has_whatsapp = json_response['exists'] if 'exists' in json_response else False
+                            usr_upd.comments = json.dumps({ 
+                                'val_wha': { 
+                                    'attempts': retries,
+                                    'status': response.status_code if response is not None else 410,
+                                    'timestamp': str(dt.now(tz.utc))
+                                }
+                            })
+
+                            # Commit current data page updates
+                            db.session.add(usr_upd)
+                            db.session.commit()
+
+                    if self.records.has_next:
+                        self.records = self.records.next()
+                    else:
+                        print("********* - WassengerTask Thread Finished - *********")
+                        break
+
+            except Exception as e:
+                self.app.logger.error('** SWING_CMS ** - WassengerTask Error: {}'.format(e))
+                return jsonify({ 'status': 'error' })
