@@ -1,6 +1,6 @@
 import json, requests, threading, time
 
-from . import db
+from . import auth, createCookieSession, db
 from datetime import datetime as dt
 from datetime import timedelta as td
 from datetime import timezone as tz
@@ -74,7 +74,7 @@ class WassengerTask(threading.Thread):
 @home.route('/')
 def _index():
     app.logger.debug('** SWING_CMS ** - Index')
-    return redirect(url_for('home._home'))
+    return redirect(url_for('home._login'))
 
 
 @home.route('/acercade/')
@@ -87,6 +87,37 @@ def _acercade():
 def _home():
     app.logger.debug('** SWING_CMS ** - Home')
     return render_template('home.html')
+
+
+@home.route('/login/')
+def _login():
+    app.logger.debug('** SWING_CMS ** - Login')
+    return render_template('login.html')
+
+
+@home.route('/loginuser/', methods=['POST'])
+def _loginuser():
+    app.logger.debug('** SWING_CMS ** - Login')
+    try:
+        # Login Process
+        # Retrieve the uid from the JWT idToken
+        idToken = request.json['idToken']
+        decoded_token = auth.verify_id_token(idToken)
+        usremail = decoded_token['email']
+        uid = decoded_token['uid'] if usremail != 'admusr@smswhapp.com' else 'SMSW-Administrator'
+
+        # Validate Admin
+        response = None
+        if uid == 'SMSW-Administrator':
+            response = createCookieSession(idToken, 'redirectURL', '/wsms/')
+        else:
+            response = createCookieSession(idToken, 'redirectURL', '/')
+        
+        return response
+
+    except Exception as e:
+        app.logger.error('** SWING_CMS ** - LoginUser Error: {}'.format(e))
+        return jsonify({ 'status': 'error' })
 
 
 @home.route('/politicaprivacidad/')
@@ -282,4 +313,10 @@ def _sendwasms():
 def _terminosdelservicio():
     app.logger.debug('** SWING_CMS ** - TerminosDelServicio')
     return render_template('terminosdelservicio.html')
+
+
+@home.route('/wsms/')
+def _wsms():
+    app.logger.debug('** SWING_CMS ** - WhatsApp SMS')
+    return render_template('wassenger.html')
 

@@ -5,7 +5,9 @@ const autoprefixer = require('autoprefixer');
 // Creates the general bundle
 var wpBundle = new Object({
     entry: [
+        './instance/js/swing_firebase-api-init.js',
         './static/css/swing_app.scss',
+        './static/js/swing_firebase.js',
         './static/js/swing_app.js'
     ],
     output: {

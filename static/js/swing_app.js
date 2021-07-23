@@ -1,13 +1,11 @@
 /************************** IMPORTS **************************/
 
 // import AOS from 'aos';
-import anchorme from 'anchorme';
 import 'core-js';
 import 'regenerator-runtime/runtime';
 import { MDCDialog } from '@material/dialog';
 import { MDCDrawer } from "@material/drawer";
 import { MDCFloatingLabel } from '@material/floating-label';
-import { MDCIconButtonToggle } from '@material/icon-button';
 import { MDCLinearProgress } from '@material/linear-progress';
 import { MDCLineRipple } from '@material/line-ripple';
 import { MDCList } from "@material/list";
