@@ -164,7 +164,7 @@ def _sendwasms():
                 if msg_msgnumber == '3' or msg_msgnumber == '4':
                     msgtype = 'val_wha'
                     msgsxhour = 30 * 60
-                    msgssleeptime = 60 / 30
+                    msgssleeptime = 60 / 15
                     url = "https://api.wassenger.com/v1/numbers/exists"
 
                 if msg_msgnumber == '1' or msg_msgnumber == '2' or msg_msgnumber == '3':
@@ -202,7 +202,7 @@ def _sendwasms():
                 if msg_msgnumber == '2':
                     msgtype = 'val_wha'
                     msgsxhour = 30 * 60
-                    msgssleeptime = 60 / 30
+                    msgssleeptime = 60 / 15
                     url = "https://api.wassenger.com/v1/numbers/exists"
 
                 users = User.query.filter(
@@ -271,7 +271,11 @@ def _returnResponseJSON(res):
     if res is not None:
         if hasattr(res, 'text') and res.text is not None:
             print(res.text)
-            response = json.loads(res.text)
+            try:
+                response = json.loads(res.text)
+            except ValueError as e:
+                response = { 'exists': False }
+                time.sleep(30)
     return response
 
 # Wassenger Background Task
