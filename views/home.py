@@ -269,9 +269,8 @@ def _smswh():
             if 'data' in js and 'fromNumber' in js['data']:
                 phone = js['data']['fromNumber']
 
-        elif 'event' in js and js['event'] != 'message:in:new':
-            if 'data' in js and 'toNumber' in js['data']:
-                phone = js['data']['toNumber']
+        elif 'data' in js and 'toNumber' in js['data']:
+            phone = js['data']['toNumber']
 
         wh = WebhooksResponse(
             phonenumber = phone,
