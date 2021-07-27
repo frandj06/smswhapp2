@@ -263,7 +263,7 @@ def _smswh():
     response = jsonify({ 'status': 'success' })
     try:
         phone = None
-        js = json.loads(request.json)
+        js = request.json
 
         if 'event' in js and js['event'] == 'message:in:new':
             if 'data' in js and 'fromNumber' in js['data']:
@@ -280,7 +280,7 @@ def _smswh():
         )
         db.session.add(wh)
         db.session.commit()
-        
+
     except Exception as e:
         app.logger.error('** SWING_CMS ** - WebHooks: {}'.format(e))
         response = jsonify({ 'status': 'error' })
