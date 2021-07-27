@@ -8,6 +8,7 @@ from flask import Blueprint, redirect, render_template, request, url_for, jsonif
 from flask import current_app as app
 from models.models import CatalogDevices, CatalogMessages, CatalogOperationsCenter, CatalogUserTestType
 from models.models import SentMessages, SentMessagesProgress, User, WebhooksResponse
+from sqlalchemy.orm.attributes import flag_modified
 
 home = Blueprint('home', __name__, template_folder='templates', static_folder='static')
 
@@ -112,12 +113,16 @@ def _sendwasms():
             msg_msgnumber = request.json['msg']
             msg_msgspeed = request.json['msgxm']
             msg_phone = request.json['phone']
-            
+
+            print(request.json)
+
             # General variables
             group = None
-            msgtype = None
+            msgphoneid = None
             msgsxhour = 60 * 4
             msgssleeptime = 60 / 4
+            msgtype = None
+            response = None
             users = None
             url = "https://api.wassenger.com/v1/messages"
 
@@ -132,6 +137,21 @@ def _sendwasms():
                 elif msg_msgspeed == 'm4':
                     msgsxhour = 4 * 60
                     msgssleeptime = 60 / 4
+            
+            # Get Phone Number Wassenger Device ID
+            if msg_phone is not None:
+                device = None
+                
+                if msg_phone == 't1':
+                    device = CatalogDevices.query.filter_by(
+                        name_short = 'dv_ctr'
+                    ).first()
+                elif msg_phone == 't2':
+                    device = CatalogDevices.query.filter_by(
+                        name_short = 'dv_trt'
+                    ).first()
+
+                msgphoneid = device.wid
 
             # Control Group
             if msg_group == 'cg':
@@ -140,11 +160,18 @@ def _sendwasms():
                 group = CatalogUserTestType.query.filter_by(
                     name_short = 'ut_ctr'
                 ).first()
+                stkgroup = CatalogUserTestType.query.filter_by(
+                    name_short = 'ut_stk'
+                ).first()
 
-                users = User.query.filter_by(
-                    usr_tt_id = group.id
+                users = User.query.filter(
+                    (
+                        (User.usr_tt_id == group.id) |
+                        (User.usr_tt_id == stkgroup.id)
+                    ) &
+                    (User.enabled == True)
                 ).order_by(
-                    User.id.asc()
+                    User.name.asc()
                 ).paginate(
                     page = 1,
                     per_page = msgsxhour,
@@ -160,7 +187,7 @@ def _sendwasms():
                 ).first()
 
                 # If option is to validate WhatsApp numbers, we can check them at a rate of
-                # 1 number every 2 seconds or 30 numbers every 60 seconds
+                # 1 number every 4 seconds or 15 numbers every 60 seconds
                 if msg_msgnumber == '3' or msg_msgnumber == '4':
                     msgtype = 'val_wha'
                     msgsxhour = 30 * 60
@@ -177,9 +204,9 @@ def _sendwasms():
                         per_page = msgsxhour,
                         error_out = True
                     )
-                elif msg_msgnumber == '4':
+                elif msg_msgnumber == '4' or msg_msgnumber == '5':
                     users = User.query.order_by(
-                        User.id.asc()
+                        User.name.asc()
                     ).paginate(
                         page = 1,
                         per_page = msgsxhour,
@@ -223,30 +250,60 @@ def _sendwasms():
                 group = CatalogUserTestType.query.filter_by(
                     name_short = 'ut_trt'
                 ).first()
+                stkgroup = CatalogUserTestType.query.filter_by(
+                    name_short = 'ut_stk'
+                ).first()
 
-                users = User.query.filter_by(
-                    usr_tt_id = group.id
+                users = User.query.filter(
+                    (
+                        (User.usr_tt_id == group.id) |
+                        (User.usr_tt_id == stkgroup.id)
+                    ) &
+                    (User.enabled == True)
                 ).order_by(
-                    User.id.asc()
+                    User.name.asc()
                 ).paginate(
                     page = 1,
                     per_page = msgsxhour,
                     error_out = True
                 )
 
-            # Initiate a Background Task to execute Wassenger Operation
-            task = WassengerTask(users, url, msgssleeptime, msgtype)
-            task.start()
-
-            print('*********** Function SendWASMS Finalized! *************')
-            return jsonify({
+            response = jsonify({
                 'status': 200,
                 'pages': (users.pages if users is not None else 0),
                 'total': (users.total if users is not None else 0)
             })
+            print('*********** Function SendWASMS Finalized! *************')
+
+            # Initiate a Background Task to execute Wassenger Operation
+            task = WassengerTask(users, url, msgssleeptime, msgtype, msg_msgnumber, msgphoneid)
+            task.start()
+
+            return  response
     except Exception as e:
         app.logger.error('** SWING_CMS ** - Send WhatsApp SMS: {}'.format(e))
         return jsonify({ 'status': 'error' })
+
+
+@home.route('/smswh/', methods = ['POST'])
+def _smswh(req):
+    app.logger.debug('** SWING_CMS ** - WebHooks')
+    response = jsonify({ 'status': 'success' })
+    try:
+        js = json.loads(req)
+        phone = None
+        if 'data' in js and 'toNumber' in js['data']:
+            phone = js['data']['toNumber']
+
+        wh = WebhooksResponse(
+            phonenumber = phone,
+            msg_webhook_response = js,
+            date_webhook_response = dt.now(tz.utc)
+        )
+    except Exception as e:
+        app.logger.error('** SWING_CMS ** - WebHooks: {}'.format(e))
+        response = jsonify({ 'status': 'error' })
+    return response, 202
 
 
 @home.route('/terminosdelservicio/')
@@ -266,15 +323,56 @@ def _wsms():
 # **************************************************************************
 
 # Wassenger Utilities
+def _returnMessagesRecords(msggroup, msgnumber):
+    try:
+        records = None
+
+        # Control and Treatment Group Messages
+        if msggroup == 'sms_ctr' or msggroup == 'sms_trt':
+            msgid = 'msg_ctr_' if msggroup == 'sms_ctr' else 'msg_trt_'
+
+            msgid == (msgid + '0' + msgnumber) if len(msgnumber) == 1 else (msgid + msgnumber)
+            
+            records = CatalogMessages.query.filter(
+                (CatalogMessages.name_short == msgid) &
+                (CatalogMessages.enabled == True)
+            ).all()
+        
+        # Developer Group Messages
+        elif msggroup == 'sms_dev':
+            if msgnumber == '1' or msgnumber == '5':
+                records = CatalogMessages.query.filter(
+                    (CatalogMessages.name_short == 'msg_w') &
+                    (CatalogMessages.enabled == True)
+                ).all()
+            elif msgnumber == '2':
+                records = CatalogMessages.query.filter(
+                    (CatalogMessages.enabled == True)
+                ).all()
+        
+        # Stakeholders Group Messages
+        elif msggroup == 'sms_stk':
+            if msgnumber == '1':
+                records = CatalogMessages.query.filter(
+                    (CatalogMessages.enabled == True)
+                ).all()
+        
+        return records
+    except Exception as e:
+        app.logger.error('** SWING_CMS ** - Return Messages Records: {}'.format(e))
+        return jsonify({ 'status': 'error' })
+
+
 def _returnResponseJSON(res):
     response = {}
     if res is not None:
         if hasattr(res, 'text') and res.text is not None:
-            print(res.text)
             try:
                 response = json.loads(res.text)
             except ValueError as e:
+                app.logger.error('** SWING_CMS ** - Return Response JSON: {}'.format(e))
                 response = { 'exists': False }
+                print(res.text)
                 time.sleep(30)
     return response
 
@@ -282,17 +380,21 @@ def _returnResponseJSON(res):
 # Configuration - API Key and Headers
 class WassengerTask(threading.Thread):
     # Properties init
-    def __init__(self, records, url, sleeptime, msgtype):
+    def __init__(self, users, url, sleeptime, msgtype, msgnumber, deviceid):
         threading.Thread.__init__(self)
         self.app = app._get_current_object()
+        self.device = deviceid
         self.headers = {
             "Content-Type": "application/json",
             "Token": app.config['WASS_API_KEY']
         }
+        self.msglist = None
+        self.msgnumber = msgnumber
         self.msgtype = msgtype
-        self.records = records
+        self.progressid = None
         self.sleeptime = sleeptime
         self.url = url
+        self.userlist = users
     
     # Thread activity task
     def run(self, *args, **kwargs):
@@ -301,10 +403,87 @@ class WassengerTask(threading.Thread):
                 payload = {}
                 
                 while True:
+                     # Send Message
+                    if self.msgtype != 'val_wha':
+                        # While valid sending hours
+                        while True:
+                            # Retrieve Messages List
+                            if self.msglist is None:
+                                self.msglist = _returnMessagesRecords(self.msgtype, self.msgnumber)
+
+                            for msg in self.msglist:
+                                payload = {}
+
+                                if msg.media_pic is not None:
+                                    payload['media'] = { 'file': msg.media_pic}
+                                
+                                if self.device is not None:
+                                    payload['device'] = self.device
+
+                                userlist = self.userlist.items
+                                for user in userlist:
+                                    u_msg = msg.message
+
+                                    if '[[telnum]]' in u_msg:
+                                        wa_link = 'https://wa.me/'
+                                        tel_num = user.op_center.phonenumber
+                                        wa_link = wa_link + tel_num.replace('+','')
+                                        u_msg = u_msg.replace('[[telnum]]', wa_link)
+                                    
+                                    if '[[oprctr]]' in u_msg:
+                                        u_msg = u_msg.replace('[[oprctr]]', user.op_center.name)
+                                    
+                                    payload['message'] = u_msg
+                                    payload['phone'] = user.phonenumber
+
+                                    sent_msg = SentMessages(
+                                        usr_id = user.id,
+                                        msg_id = msg.id,
+                                        msg_request = json.dumps(payload)
+                                    )
+                                    
+                                    response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                                    
+                                    sent_msg.msg_response = _returnResponseJSON(response)
+                                    sent_msg.date_response = dt.now(tz.utc)
+                                    db.session.add(sent_msg)
+                                    
+                                    # Update Sent Message Progress Record
+                                    if self.progressid is not None:
+                                        self.progressid.msg_last_usr = json.dumps({
+                                                'uid': user.id,
+                                                'uname': user.name,
+                                                'uphone': user.phonenumber
+                                        })
+                                        self.progressid.msg_sent_detail = json.dumps(payload)
+                                        self.progressid.msg_sent_amount += 1
+                                        flag_modified(self.progressid, 'msg_last_usr')
+                                        flag_modified(self.progressid, 'msg_sent_detail')
+                                    
+                                    # Create Sent Message Progress Record
+                                    else:
+                                        self.progressid = SentMessagesProgress(
+                                            msg_last_usr = json.dumps({
+                                                'uid': user.id,
+                                                'uname': user.name,
+                                                'uphone': user.phonenumber
+                                            }),
+                                            msg_sent_detail = json.dumps(payload),
+                                            msg_sent_amount = 1
+                                        )
+                                        db.session.add(self.progressid)
+                                    
+                                    db.session.commit()
+                                    db.session.refresh(self.progressid)
+                                    
+                                    time.sleep(self.sleeptime)
+
+                            break
+                                
                     # Validate WhatsApp Number
-                    if self.msgtype == 'val_wha':
-                        for item in self.records.items:
-                            payload['phone'] = item.phonenumber
+                    elif self.msgtype == 'val_wha':
+                        for user in self.userlist.items:
+                            payload['phone'] = user.phonenumber
                             
                             retries = 1
                             response = requests.request("POST", self.url, json=payload, headers=self.headers)
@@ -326,7 +505,7 @@ class WassengerTask(threading.Thread):
                             
                             # Update User Information
                             usr_upd = User.query.filter(
-                                User.id == item.id
+                                User.id == user.id
                             ).first()
                             usr_upd.has_whatsapp = json_response['exists'] if 'exists' in json_response else False
                             usr_upd.comments = json.dumps({ 
@@ -341,9 +520,14 @@ class WassengerTask(threading.Thread):
                             db.session.add(usr_upd)
                             db.session.commit()
 
-                    if self.records.has_next:
-                        self.records = self.records.next()
+                    
+                    if self.userlist.has_next:
+                        self.userlist = self.userlist.next()
                     else:
+                        if self.progressid is not None:
+                            self.progressid.msg_sent_completed = True
+                            db.session.commit()
+                        
                         print("********* - WassengerTask Thread Finished - *********")
                         break
 

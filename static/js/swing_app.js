@@ -222,7 +222,7 @@ export function selectMessageGroup(group) {
         document.querySelector('.container-smswhapp-group--stakeholder').classList.add('container--hidden');
         document.querySelector('.container-smswhapp-group--treatment').classList.add('container--hidden');
         document.querySelector('.container-smswhapp-group--developer').classList.remove('container--hidden');
-        createMessageSelectList(msgList, 4);
+        createMessageSelectList(msgList, 5);
     }
 
     msgGroup = group;

@@ -4,13 +4,13 @@
 
 const filesToPreCache = [
     // Web pages
-    { url: '/', revision: '2021-07-22-1' },
-    { url: '/politicaprivacidad/', revision: '2021-07-22-1' },
-    { url: '/terminosdelservicio/', revision: '2021-07-22-1' },
+    { url: '/', revision: '2021-07-26-1' },
+    { url: '/politicaprivacidad/', revision: '2021-07-26-1' },
+    { url: '/terminosdelservicio/', revision: '2021-07-26-1' },
     // Images
-    { url: '/static/images/manifest/bid_slogan.png', revision: '2021-07-22-1' },
-    { url: '/static/images/manifest/icon-512x512.png', revision: '2021-07-22-1' },
-    { url: '/static/images/manifest/options_list.svg', revision: '2021-07-22-1' }
+    { url: '/static/images/manifest/bid_slogan.png', revision: '2021-07-26-1' },
+    { url: '/static/images/manifest/icon-512x512.png', revision: '2021-07-26-1' },
+    { url: '/static/images/manifest/options_list.svg', revision: '2021-07-26-1' }
     // Audio Files
 ];
 
@@ -35,7 +35,7 @@ workbox.core.clientsClaim();
 // Configuring Workbox
 workbox.core.setCacheNameDetails({
     prefix: 'smswhapp',
-    suffix: 'v2021-07-22-1',
+    suffix: 'v2021-07-26-1',
     precache: 'pre-cache',
     runtime: 'run-time',
     googleAnalytics: 'ga'
