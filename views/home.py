@@ -73,34 +73,6 @@ def _reportes():
     return render_template('reports.html')
 
 
-# @home.route('/sendSMS/', methods = ['POST'])
-# def _sendsms():
-#     app.logger.debug('** SWING_CMS ** - Send WhatsApp SMS')
-#     try:
-#         url = "https://api.wassenger.com/v1/messages"
-
-#         payloadNumbers = ["+12023231111"]
-
-#         for number in payloadNumbers:
-#             payloadMedia = {
-#                 "phone": number,
-#                 "media": {
-#                     "file": "606d579347e544420b3dd1c5"
-#                 },
-#                 "message": "Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos por teléfono o escríbenos por WhatsApp, de Lunes a Viernes de 7:30am a 3:00pm, a este número: https://wa.me/50374934298"
-#             }
-            
-#             response = requests.request("POST", url, json=payloadMedia, headers=headers)
-#             print(response.text)
-
-#             time.sleep(5)
-
-#         return jsonify({ 'status': 200 })
-#     except Exception as e:
-#         app.logger.error('** SWING_CMS ** - Send WhatsApp SMS: {}'.format(e))
-#         return jsonify({ 'status': 'error' })
-
-
 @home.route('/sendWASMS/', methods = ['POST'])
 def _sendwasms():
     app.logger.debug('** SWING_CMS ** - Send WhatsApp SMS')
@@ -286,14 +258,20 @@ def _sendwasms():
 
 
 @home.route('/smswh/', methods = ['POST'])
-def _smswh(req):
+def _smswh():
     app.logger.debug('** SWING_CMS ** - WebHooks')
     response = jsonify({ 'status': 'success' })
     try:
-        js = json.loads(req)
         phone = None
-        if 'data' in js and 'toNumber' in js['data']:
-            phone = js['data']['toNumber']
+        js = json.loads(request.json)
+
+        if 'event' in js and js['event'] == 'message:in:new':
+            if 'data' in js and 'fromNumber' in js['data']:
+                phone = js['data']['fromNumber']
+
+        elif 'event' in js and js['event'] != 'message:in:new':
+            if 'data' in js and 'toNumber' in js['data']:
+                phone = js['data']['toNumber']
 
         wh = WebhooksResponse(
             phonenumber = phone,
