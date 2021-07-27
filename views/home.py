@@ -278,6 +278,9 @@ def _smswh():
             msg_webhook_response = js,
             date_webhook_response = dt.now(tz.utc)
         )
+        db.session.add(wh)
+        db.session.commit()
+        
     except Exception as e:
         app.logger.error('** SWING_CMS ** - WebHooks: {}'.format(e))
         response = jsonify({ 'status': 'error' })
