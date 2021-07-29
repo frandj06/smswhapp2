@@ -142,7 +142,9 @@ def _sendwasms():
                         (User.usr_tt_id == group.id) |
                         (User.usr_tt_id == stkgroup.id)
                     ) &
-                    (User.enabled == True)
+                    (User.enabled == True) &
+                    (User.said_stop == False) &
+                    (User.has_whatsapp == True)
                 ).order_by(
                     User.name.asc()
                 ).paginate(
@@ -206,7 +208,9 @@ def _sendwasms():
                             (User.usr_tt_id == cotgroup.id) |
                             (User.usr_tt_id == stkgroup.id)
                         ) &
-                        (User.enabled == True)
+                        (User.enabled == True) &
+                        (User.said_stop == False) &
+                        (User.has_whatsapp == True)
                     ).order_by(
                         User.name.asc()
                     ).paginate(
@@ -262,7 +266,9 @@ def _sendwasms():
                         (User.usr_tt_id == group.id) |
                         (User.usr_tt_id == stkgroup.id)
                     ) &
-                    (User.enabled == True)
+                    (User.enabled == True) &
+                    (User.said_stop == False) &
+                    (User.has_whatsapp == True)
                 ).order_by(
                     User.name.asc()
                 ).paginate(
@@ -297,8 +303,22 @@ def _smswh():
         js = request.json
 
         if 'event' in js and js['event'] == 'message:in:new':
-            if 'data' in js and 'fromNumber' in js['data']:
-                phone = js['data']['fromNumber']
+            if 'data' in js:
+                if 'fromNumber' in js['data']:
+                    phone = js['data']['fromNumber']
+                
+                    if 'body' in js['data']:
+                        msg = js['data']['body']
+                        msg = msg.strip().upper()
+
+                        if msg == 'PARA':
+                            user = User.query.filter_by(
+                                phonenumber = phone
+                            ).first()
+                            
+                            user.said_stop = True
+                            
+                            db.session.commit()
 
         elif 'data' in js and 'toNumber' in js['data']:
             phone = js['data']['toNumber']
