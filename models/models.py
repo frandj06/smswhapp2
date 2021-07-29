@@ -73,7 +73,7 @@ class SentMessages(db.Model):
     date_response = db.Column(db.DateTime, unique=False, nullable=True, index=True, default=dt.now(tz.utc))
     msg_usr_reply = db.Column(db.JSON, nullable=True)
     date_usr_reply = db.Column(db.DateTime, unique=False, nullable=True, index=True, default=dt.now(tz.utc))
-    s_msg_usr = db.relationship('User', lazy='subquery', back_populates='smsg_usr')
+    # s_msg_usr = db.relationship('User', lazy='subquery', back_populates='smsg_usr')
     s_msg_msg = db.relationship('CatalogMessages', lazy='subquery', back_populates='smsg_msg')
 
 
@@ -99,7 +99,7 @@ class User(db.Model):
     has_whatsapp = db.Column(db.Boolean, nullable=True, default=True)
     usr_tt_id = db.Column(db.Integer, db.ForeignKey('catalog_user_test_type.id'), nullable=True)
     op_cnt_id = db.Column(db.Integer, db.ForeignKey('catalog_operations_center.id'), nullable=True)
-    smsg_usr = db.relationship('SentMessages', lazy='subquery', back_populates='s_msg_usr')
+    # smsg_usr = db.relationship('SentMessages', lazy='subquery', back_populates='s_msg_usr')
     test_type = db.relationship('CatalogUserTestType', lazy='subquery', back_populates='usr_test_type')
     op_center = db.relationship('CatalogOperationsCenter', lazy='subquery', back_populates='usr_op_cnt')
 

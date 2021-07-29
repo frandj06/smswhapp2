@@ -488,40 +488,41 @@ class WassengerTask(threading.Thread):
                                     msg_request = json.dumps(payload)
                                 )
                                 
-                                response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                                # response = requests.request("POST", self.url, json=payload, headers=self.headers)
                                 
-                                sent_msg.msg_response = _returnResponseJSON(response)
-                                sent_msg.date_response = dt.now(tz.utc)
-                                db.session.add(sent_msg)
+                                # sent_msg.msg_response = _returnResponseJSON(response)
+                                # sent_msg.date_response = dt.now(tz.utc)
+                                # db.session.add(sent_msg)
                                 
-                                # Update Sent Message Progress Record
-                                if self.progressid is not None:
-                                    self.progressid.msg_last_usr = json.dumps({
-                                            'uid': user.id,
-                                            'uname': user.name,
-                                            'uphone': user.phonenumber
-                                    })
-                                    self.progressid.msg_sent_detail = json.dumps(payload)
-                                    self.progressid.msg_sent_amount += 1
-                                    flag_modified(self.progressid, 'msg_last_usr')
-                                    flag_modified(self.progressid, 'msg_sent_detail')
+                                # # Update Sent Message Progress Record
+                                # if self.progressid is not None:
+                                #     self.progressid.msg_last_usr = json.dumps({
+                                #             'uid': user.id,
+                                #             'uname': user.name,
+                                #             'uphone': user.phonenumber
+                                #     })
+                                #     self.progressid.msg_sent_detail = json.dumps(payload)
+                                #     self.progressid.msg_sent_amount += 1
+                                #     flag_modified(self.progressid, 'msg_last_usr')
+                                #     flag_modified(self.progressid, 'msg_sent_detail')
                                 
-                                # Create Sent Message Progress Record
-                                else:
-                                    self.progressid = SentMessagesProgress(
-                                        msg_last_usr = json.dumps({
-                                            'uid': user.id,
-                                            'uname': user.name,
-                                            'uphone': user.phonenumber
-                                        }),
-                                        msg_sent_detail = json.dumps(payload),
-                                        msg_sent_amount = 1
-                                    )
-                                    db.session.add(self.progressid)
+                                # # Create Sent Message Progress Record
+                                # else:
+                                #     self.progressid = SentMessagesProgress(
+                                #         msg_last_usr = json.dumps({
+                                #             'uid': user.id,
+                                #             'uname': user.name,
+                                #             'uphone': user.phonenumber
+                                #         }),
+                                #         msg_sent_detail = json.dumps(payload),
+                                #         msg_sent_amount = 1
+                                #     )
+                                #     db.session.add(self.progressid)
                                 
-                                db.session.commit()
-                                db.session.refresh(self.progressid)
+                                # db.session.commit()
+                                # db.session.refresh(self.progressid)
                                 
+                                print(user.name)
                                 time.sleep(self.sleeptime)
                                 
                     # Validate WhatsApp Number
