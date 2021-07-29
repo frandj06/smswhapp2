@@ -2,6 +2,7 @@ import json, requests, threading, time
 
 from . import auth, createCookieSession, db
 from datetime import datetime as dt
+from datetime import time as tm
 from datetime import timedelta as td
 from datetime import timezone as tz
 from flask import Blueprint, redirect, render_template, request, url_for, jsonify, make_response
@@ -176,7 +177,7 @@ def _sendwasms():
                         per_page = msgsxhour,
                         error_out = True
                     )
-                elif msg_msgnumber == '4' or msg_msgnumber == '5':
+                elif msg_msgnumber == '4':
                     users = User.query.order_by(
                         User.name.asc()
                     ).paginate(
@@ -184,6 +185,36 @@ def _sendwasms():
                         per_page = msgsxhour,
                         error_out = True
                     )
+                elif msg_msgnumber == '5' or msg_msgnumber == '6':
+                    # Control Or Treatment Group
+                    cotgroup = None
+                    if msg_msgnumber == '5':
+                        cotgroup = CatalogUserTestType.query.filter_by(
+                            name_short = 'ut_ctr'
+                        ).first()
+                    elif msg_msgnumber == '6':
+                        cotgroup = CatalogUserTestType.query.filter_by(
+                            name_short = 'ut_trt'
+                        ).first()
+                    
+                    stkgroup = CatalogUserTestType.query.filter_by(
+                        name_short = 'ut_stk'
+                    ).first()
+
+                    users = User.query.filter(
+                        (
+                            (User.usr_tt_id == cotgroup.id) |
+                            (User.usr_tt_id == stkgroup.id)
+                        ) &
+                        (User.enabled == True)
+                    ).order_by(
+                        User.name.asc()
+                    ).paginate(
+                        page = 1,
+                        per_page = msgsxhour,
+                        error_out = True
+                    )
+
                 
             # Stakeholders Group
             elif msg_group == 'sg':
@@ -303,6 +334,14 @@ def _wsms():
 # **************************************************************************
 
 # Wassenger Utilities
+def _isNowTimeValid(startTime, endTime, nowTime = dt.now().time()):
+    # Validate Same Day Range
+    if startTime < endTime: 
+        return nowTime >= startTime and nowTime <= endTime 
+    # Validate Midnight Range
+    else: 
+        return nowTime >= startTime or nowTime <= endTime 
+
 def _returnMessagesRecords(msggroup, msgnumber):
     try:
         records = None
@@ -320,7 +359,7 @@ def _returnMessagesRecords(msggroup, msgnumber):
         
         # Developer Group Messages
         elif msggroup == 'sms_dev':
-            if msgnumber == '1' or msgnumber == '5':
+            if msgnumber == '1' or msgnumber == '5' or msgnumber == '6':
                 records = CatalogMessages.query.filter(
                     (CatalogMessages.name_short == 'msg_w') &
                     (CatalogMessages.enabled == True)
@@ -385,80 +424,85 @@ class WassengerTask(threading.Thread):
                 while True:
                      # Send Message
                     if self.msgtype != 'val_wha':
-                        # While valid sending hours
-                        while True:
-                            # Retrieve Messages List
-                            if self.msglist is None:
-                                self.msglist = _returnMessagesRecords(self.msgtype, self.msgnumber)
+                        # Retrieve Messages List
+                        if self.msglist is None:
+                            self.msglist = _returnMessagesRecords(self.msgtype, self.msgnumber)
 
-                            for msg in self.msglist:
-                                payload = {}
+                        for msg in self.msglist:
+                            payload = {}
 
-                                if msg.media_pic is not None:
-                                    payload['media'] = { 'file': msg.media_pic}
+                            if msg.media_pic is not None:
+                                payload['media'] = { 'file': msg.media_pic}
+                            
+                            if self.device is not None:
+                                payload['device'] = self.device
+
+                            userlist = self.userlist.items
+                            for user in userlist:
+                                # Validate if it's not Valid Sending Hours
+                                if not _isNowTimeValid(tm(7,30), tm(16,45), dt.now().time()):
+                                    # Pause for 10 minutes until Valid Sending Hours
+                                    while True:
+                                        time.sleep(600)
+                                        print(self.msgtype + ' - ' + self.msgnumber + ' - ' + ' Not Valid Hours.')
+                                        if _isNowTimeValid(tm(7,30), tm(16,45), dt.now().time()):
+                                            break
                                 
-                                if self.device is not None:
-                                    payload['device'] = self.device
+                                u_msg = msg.message
 
-                                userlist = self.userlist.items
-                                for user in userlist:
-                                    u_msg = msg.message
+                                if '[[telnum]]' in u_msg:
+                                    wa_link = 'https://wa.me/'
+                                    tel_num = user.op_center.phonenumber
+                                    wa_link = wa_link + tel_num.replace('+','')
+                                    u_msg = u_msg.replace('[[telnum]]', wa_link)
+                                
+                                if '[[oprctr]]' in u_msg:
+                                    u_msg = u_msg.replace('[[oprctr]]', user.op_center.name)
+                                
+                                payload['message'] = u_msg
+                                payload['phone'] = user.phonenumber
 
-                                    if '[[telnum]]' in u_msg:
-                                        wa_link = 'https://wa.me/'
-                                        tel_num = user.op_center.phonenumber
-                                        wa_link = wa_link + tel_num.replace('+','')
-                                        u_msg = u_msg.replace('[[telnum]]', wa_link)
-                                    
-                                    if '[[oprctr]]' in u_msg:
-                                        u_msg = u_msg.replace('[[oprctr]]', user.op_center.name)
-                                    
-                                    payload['message'] = u_msg
-                                    payload['phone'] = user.phonenumber
-
-                                    sent_msg = SentMessages(
-                                        usr_id = user.id,
-                                        msg_id = msg.id,
-                                        msg_request = json.dumps(payload)
+                                sent_msg = SentMessages(
+                                    usr_id = user.id,
+                                    msg_id = msg.id,
+                                    msg_request = json.dumps(payload)
+                                )
+                                
+                                response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                                
+                                sent_msg.msg_response = _returnResponseJSON(response)
+                                sent_msg.date_response = dt.now(tz.utc)
+                                db.session.add(sent_msg)
+                                
+                                # Update Sent Message Progress Record
+                                if self.progressid is not None:
+                                    self.progressid.msg_last_usr = json.dumps({
+                                            'uid': user.id,
+                                            'uname': user.name,
+                                            'uphone': user.phonenumber
+                                    })
+                                    self.progressid.msg_sent_detail = json.dumps(payload)
+                                    self.progressid.msg_sent_amount += 1
+                                    flag_modified(self.progressid, 'msg_last_usr')
+                                    flag_modified(self.progressid, 'msg_sent_detail')
+                                
+                                # Create Sent Message Progress Record
+                                else:
+                                    self.progressid = SentMessagesProgress(
+                                        msg_last_usr = json.dumps({
+                                            'uid': user.id,
+                                            'uname': user.name,
+                                            'uphone': user.phonenumber
+                                        }),
+                                        msg_sent_detail = json.dumps(payload),
+                                        msg_sent_amount = 1
                                     )
-                                    
-                                    response = requests.request("POST", self.url, json=payload, headers=self.headers)
-                                    
-                                    sent_msg.msg_response = _returnResponseJSON(response)
-                                    sent_msg.date_response = dt.now(tz.utc)
-                                    db.session.add(sent_msg)
-                                    
-                                    # Update Sent Message Progress Record
-                                    if self.progressid is not None:
-                                        self.progressid.msg_last_usr = json.dumps({
-                                                'uid': user.id,
-                                                'uname': user.name,
-                                                'uphone': user.phonenumber
-                                        })
-                                        self.progressid.msg_sent_detail = json.dumps(payload)
-                                        self.progressid.msg_sent_amount += 1
-                                        flag_modified(self.progressid, 'msg_last_usr')
-                                        flag_modified(self.progressid, 'msg_sent_detail')
-                                    
-                                    # Create Sent Message Progress Record
-                                    else:
-                                        self.progressid = SentMessagesProgress(
-                                            msg_last_usr = json.dumps({
-                                                'uid': user.id,
-                                                'uname': user.name,
-                                                'uphone': user.phonenumber
-                                            }),
-                                            msg_sent_detail = json.dumps(payload),
-                                            msg_sent_amount = 1
-                                        )
-                                        db.session.add(self.progressid)
-                                    
-                                    db.session.commit()
-                                    db.session.refresh(self.progressid)
-                                    
-                                    time.sleep(self.sleeptime)
-
-                            break
+                                    db.session.add(self.progressid)
+                                
+                                db.session.commit()
+                                db.session.refresh(self.progressid)
+                                
+                                time.sleep(self.sleeptime)
                                 
                     # Validate WhatsApp Number
                     elif self.msgtype == 'val_wha':
