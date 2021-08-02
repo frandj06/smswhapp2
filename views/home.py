@@ -463,8 +463,8 @@ class WassengerTask(threading.Thread):
                                 if not _isNowTimeValid(tm(7,30), tm(16,45), dt.now().time()):
                                     # Pause for 10 minutes until Valid Sending Hours
                                     while True:
-                                        time.sleep(600)
                                         print(self.msgtype + ' - ' + self.msgnumber + ' - ' + ' Not Valid Hours.')
+                                        time.sleep(600)
                                         if _isNowTimeValid(tm(7,30), tm(16,45), dt.now().time()):
                                             break
                                 
