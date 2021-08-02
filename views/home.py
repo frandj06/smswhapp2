@@ -530,40 +530,41 @@ class WassengerTask(threading.Thread):
                         for user in self.userlist.items:
                             payload['phone'] = user.phonenumber
                             
-                            retries = 1
-                            response = requests.request("POST", self.url, json=payload, headers=self.headers)
-                            json_response = _returnResponseJSON(response)
-                            time.sleep(self.sleeptime)
+                            retries += 1
+                            # response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                            # json_response = _returnResponseJSON(response)
+                            # time.sleep(self.sleeptime)
 
-                            # Try to validate the number 2 more times
-                            if 'exists' in json_response and json_response['exists'] is not True:
-                                retries = 2
-                                response = requests.request("POST", self.url, json=payload, headers=self.headers)
-                                json_response = _returnResponseJSON(response)
-                                time.sleep(self.sleeptime)
+                            # # Try to validate the number 2 more times
+                            # if 'exists' in json_response and json_response['exists'] is not True:
+                            #     retries = 2
+                            #     response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                            #     json_response = _returnResponseJSON(response)
+                            #     time.sleep(self.sleeptime)
 
-                                if 'exists' in json_response and json_response['exists'] is not True:
-                                    retries = 3
-                                    response = requests.request("POST", self.url, json=payload, headers=self.headers)
-                                    json_response = _returnResponseJSON(response)
-                                    time.sleep(self.sleeptime)
+                            #     if 'exists' in json_response and json_response['exists'] is not True:
+                            #         retries = 3
+                            #         response = requests.request("POST", self.url, json=payload, headers=self.headers)
+                            #         json_response = _returnResponseJSON(response)
+                            #         time.sleep(self.sleeptime)
                             
-                            # Update User Information
-                            usr_upd = User.query.filter(
-                                User.id == user.id
-                            ).first()
-                            usr_upd.has_whatsapp = json_response['exists'] if 'exists' in json_response else False
-                            usr_upd.comments = json.dumps({ 
-                                'val_wha': { 
-                                    'attempts': retries,
-                                    'status': response.status_code if response is not None else 410,
-                                    'timestamp': str(dt.now(tz.utc))
-                                }
-                            })
+                            # # Update User Information
+                            # usr_upd = User.query.filter(
+                            #     User.id == user.id
+                            # ).first()
+                            # usr_upd.has_whatsapp = json_response['exists'] if 'exists' in json_response else False
+                            # usr_upd.comments = json.dumps({ 
+                            #     'val_wha': { 
+                            #         'attempts': retries,
+                            #         'status': response.status_code if response is not None else 410,
+                            #         'timestamp': str(dt.now(tz.utc))
+                            #     }
+                            # })
 
-                            # Commit current data page updates
-                            db.session.add(usr_upd)
-                            db.session.commit()
+                            # # Commit current data page updates
+                            # db.session.add(usr_upd)
+                            # db.session.commit()
+                            print(retries)
 
                     
                     if self.userlist.has_next:
