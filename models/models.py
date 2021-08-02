@@ -35,8 +35,8 @@ class CatalogMessages(db.Model):
     media_audio = db.Column(db.String(100), nullable=True)
     enabled = db.Column(db.Boolean, nullable=True, default=True)
     usr_tt_id = db.Column(db.Integer, db.ForeignKey('catalog_user_test_type.id'), nullable=True)
-    smsg_msg = db.relationship('SentMessages', lazy='subquery', back_populates='s_msg_msg')
-    test_type = db.relationship('CatalogUserTestType', lazy='subquery', back_populates='msg_test_type')
+    smsg_msg = db.relationship('SentMessages', lazy='dynamic', back_populates='s_msg_msg')
+    test_type = db.relationship('CatalogUserTestType', lazy='dynamic', back_populates='msg_test_type')
 
 
 # Catalog - Operations Center Class
@@ -47,7 +47,7 @@ class CatalogOperationsCenter(db.Model):
     name_short = db.Column(db.String(6), unique=True, nullable=True)
     phonenumber = db.Column(db.String(20), nullable=True)
     enabled = db.Column(db.Boolean, nullable=True, default=True)
-    usr_op_cnt = db.relationship('User', lazy='subquery', back_populates='op_center')
+    usr_op_cnt = db.relationship('User', lazy='dynamic', back_populates='op_center')
 
 
 # Catalog - User Test Type Class
@@ -57,8 +57,8 @@ class CatalogUserTestType(db.Model):
     name = db.Column(db.String(60), unique=True, nullable=False)
     name_short = db.Column(db.String(6), unique=True, nullable=True)
     enabled = db.Column(db.Boolean, nullable=True, default=True)
-    usr_test_type = db.relationship('User', lazy='subquery', back_populates='test_type')
-    msg_test_type = db.relationship('CatalogMessages', lazy='subquery', back_populates='test_type')
+    usr_test_type = db.relationship('User', lazy='dynamic', back_populates='test_type')
+    msg_test_type = db.relationship('CatalogMessages', lazy='dynamic', back_populates='test_type')
 
 
 # Sent Messages Class
@@ -73,8 +73,8 @@ class SentMessages(db.Model):
     date_response = db.Column(db.DateTime, unique=False, nullable=True, index=True, default=dt.now(tz.utc))
     msg_usr_reply = db.Column(db.JSON, nullable=True)
     date_usr_reply = db.Column(db.DateTime, unique=False, nullable=True, index=True, default=dt.now(tz.utc))
-    # s_msg_usr = db.relationship('User', lazy='subquery', back_populates='smsg_usr')
-    s_msg_msg = db.relationship('CatalogMessages', lazy='subquery', back_populates='smsg_msg')
+    s_msg_usr = db.relationship('User', lazy='dynamic', back_populates='smsg_usr')
+    s_msg_msg = db.relationship('CatalogMessages', lazy='dynamic', back_populates='smsg_msg')
 
 
 # Sent Messages Progress Class
@@ -99,9 +99,9 @@ class User(db.Model):
     has_whatsapp = db.Column(db.Boolean, nullable=True, default=True)
     usr_tt_id = db.Column(db.Integer, db.ForeignKey('catalog_user_test_type.id'), nullable=True)
     op_cnt_id = db.Column(db.Integer, db.ForeignKey('catalog_operations_center.id'), nullable=True)
-    # smsg_usr = db.relationship('SentMessages', lazy='subquery', back_populates='s_msg_usr')
-    test_type = db.relationship('CatalogUserTestType', lazy='subquery', back_populates='usr_test_type')
-    op_center = db.relationship('CatalogOperationsCenter', lazy='subquery', back_populates='usr_op_cnt')
+    smsg_usr = db.relationship('SentMessages', lazy='dynamic', back_populates='s_msg_usr')
+    test_type = db.relationship('CatalogUserTestType', lazy='dynamic', back_populates='usr_test_type')
+    op_center = db.relationship('CatalogOperationsCenter', lazy='dynamic', back_populates='usr_op_cnt')
 
 
 # Webhooks Response Class
