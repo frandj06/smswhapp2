@@ -460,13 +460,13 @@ class WassengerTask(threading.Thread):
                             userlist = self.userlist.items
                             for user in userlist:
                                 # Validate if it's not Valid Sending Hours
-                                if not _isNowTimeValid(tm(7,30), tm(16,45), dt.now().time()):
-                                    # Pause for 10 minutes until Valid Sending Hours
-                                    while True:
-                                        time.sleep(600)
-                                        print(self.msgtype + ' - ' + self.msgnumber + ' - ' + ' Not Valid Hours.')
-                                        if _isNowTimeValid(tm(7,30), tm(16,45), dt.now().time()):
-                                            break
+                                # if not _isNowTimeValid(tm(7,30), tm(16,45), dt.now().time()):
+                                #     # Pause for 10 minutes until Valid Sending Hours
+                                #     while True:
+                                #         time.sleep(600)
+                                #         print(self.msgtype + ' - ' + self.msgnumber + ' - ' + ' Not Valid Hours.')
+                                #         if _isNowTimeValid(tm(7,30), tm(16,45), dt.now().time()):
+                                #             break
                                 
                                 u_msg = msg.message
 
@@ -530,7 +530,7 @@ class WassengerTask(threading.Thread):
                         for user in self.userlist.items:
                             payload['phone'] = user.phonenumber
                             
-                            retries += 1
+                            retries = 1
                             # response = requests.request("POST", self.url, json=payload, headers=self.headers)
                             # json_response = _returnResponseJSON(response)
                             # time.sleep(self.sleeptime)
@@ -564,7 +564,6 @@ class WassengerTask(threading.Thread):
                             # # Commit current data page updates
                             # db.session.add(usr_upd)
                             # db.session.commit()
-                            print(retries)
 
                     
                     if self.userlist.has_next:
