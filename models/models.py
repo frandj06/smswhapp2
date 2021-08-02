@@ -101,7 +101,7 @@ class User(db.Model):
     op_cnt_id = db.Column(db.Integer, db.ForeignKey('catalog_operations_center.id'), nullable=True)
     smsg_usr = db.relationship('SentMessages', lazy='select', back_populates='s_msg_usr')
     test_type = db.relationship('CatalogUserTestType', lazy='select', back_populates='usr_test_type')
-    op_center = db.relationship('CatalogOperationsCenter', lazy='select', back_populates='usr_op_cnt')
+    op_center = db.relationship('CatalogOperationsCenter', lazy='joined', back_populates='usr_op_cnt')
 
 
 # Webhooks Response Class
