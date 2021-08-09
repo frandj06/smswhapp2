@@ -460,12 +460,12 @@ class WassengerTask(threading.Thread):
                             userlist = self.userlist.items
                             for user in userlist:
                                 # Validate if it's not Valid Sending Hours
-                                if not _isNowTimeValid(tm(7,30), tm(16,45), dt.now().time()):
+                                if not _isNowTimeValid(tm(7,30), tm(17,00), dt.now().time()):
                                     # Pause for 10 minutes until Valid Sending Hours
                                     while True:
                                         print(self.msgtype + ' - ' + self.msgnumber + ' - ' + ' Not Valid Hours.')
                                         time.sleep(600)
-                                        if _isNowTimeValid(tm(7,30), tm(16,45), dt.now().time()):
+                                        if _isNowTimeValid(tm(7,30), tm(17,00), dt.now().time()):
                                             break
                                 
                                 u_msg = msg.message
