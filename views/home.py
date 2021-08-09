@@ -370,7 +370,7 @@ def _returnMessagesRecords(msggroup, msgnumber):
         if msggroup == 'sms_ctr' or msggroup == 'sms_trt':
             msgid = 'msg_ctr_' if msggroup == 'sms_ctr' else 'msg_trt_'
 
-            msgid == (msgid + '0' + msgnumber) if len(msgnumber) == 1 else (msgid + msgnumber)
+            msgid = (msgid + '0' + msgnumber) if len(msgnumber) == 1 else (msgid + msgnumber)
             
             records = CatalogMessages.query.filter(
                 (CatalogMessages.name_short == msgid) &
