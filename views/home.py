@@ -470,14 +470,17 @@ class WassengerTask(threading.Thread):
                                 
                                 u_msg = msg.message
 
+                                if '[[oprctr]]' in u_msg:
+                                    u_msg = u_msg.replace('[[oprctr]]', user.op_center.name)
+
                                 if '[[telnum]]' in u_msg:
+                                    u_msg = u_msg.replace('[[telnum]]', user.op_center.phonenumber)
+
+                                if '[[watellink]]' in u_msg:
                                     wa_link = 'https://wa.me/'
                                     tel_num = user.op_center.phonenumber
                                     wa_link = wa_link + tel_num.replace('+','')
-                                    u_msg = u_msg.replace('[[telnum]]', wa_link)
-                                
-                                if '[[oprctr]]' in u_msg:
-                                    u_msg = u_msg.replace('[[oprctr]]', user.op_center.name)
+                                    u_msg = u_msg.replace('[[watellink]]', wa_link)
                                 
                                 payload['message'] = u_msg
                                 payload['phone'] = user.phonenumber
@@ -497,11 +500,15 @@ class WassengerTask(threading.Thread):
                                 # Update Sent Message Progress Record
                                 if self.progressid is not None:
                                     self.progressid.msg_last_usr = json.dumps({
-                                            'uid': user.id,
-                                            'uname': user.name,
-                                            'uphone': user.phonenumber
+                                        'uid': user.id,
+                                        'uname': user.name,
+                                        'uphone': user.phonenumber
                                     })
-                                    self.progressid.msg_sent_detail = json.dumps(payload)
+                                    self.progressid.msg_sent_detail = json.dumps({
+                                        'msg_group': self.msgtype,
+                                        'msg_number': self.msgnumber,
+                                        'payload': payload
+                                    })
                                     self.progressid.msg_sent_amount += 1
                                     flag_modified(self.progressid, 'msg_last_usr')
                                     flag_modified(self.progressid, 'msg_sent_detail')
@@ -514,7 +521,11 @@ class WassengerTask(threading.Thread):
                                             'uname': user.name,
                                             'uphone': user.phonenumber
                                         }),
-                                        msg_sent_detail = json.dumps(payload),
+                                        msg_sent_detail = json.dumps({
+                                            'msg_group': self.msgtype,
+                                            'msg_number': self.msgnumber,
+                                            'payload': payload
+                                        }),
                                         msg_sent_amount = 1
                                     )
                                     db.session.add(self.progressid)
