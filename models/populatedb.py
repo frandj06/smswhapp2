@@ -64,10 +64,9 @@ def populateMessages():
         )
 
         msg_experimento = (
-            '👋 Estamos aquí para apoyarte. Si ves alguna de estas señales, contáctanos de L-V de 7:30am a 3:00pm.:\n\n'
-            'Clickea en el siguiente enlace para escribir con el WhatsApp de Ciudad Mujer [[oprctr]]: [[watellink]]\n\n'
-            'O marca el siguiente número para hablar con Ciudad Mujer [[oprctr]]: [[telnum]]\n\n'
-            'Sólo responde a este número si quieres dejar de recibir nuestros mensajes, con la palabra *PARA*.'
+            '👋 Estamos aquí para apoyarte. Si ves alguna de estas señales, RESPONDE a este mensaje, y te atenderemos de L-V de 7:30am a 3:00pm.\n\n'
+            'Si quieres dejar de recibir nuestros mensajes, escribe la palabra *PARA*.\n\n'
+            '👀 Recuerda eliminar los mensajes luego de leerlos, con la flechita a la derecha del mensaje 🔽.'
         )
 
         usr_tt_ctr = CatalogUserTestType.query.filter_by(name_short='ut_ctr').first()
